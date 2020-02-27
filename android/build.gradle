@@ -35,4 +35,15 @@ allprojects {
         jcenter()
         maven { url 'https://jitpack.io' }
     }
+    // https://stackoverflow.com/questions/51508578/react-native-android-release-build-failing-gradle/51508579#51508579
+    subprojects { subproject ->
+        afterEvaluate{
+            if((subproject.plugins.hasPlugin('android') || subproject.plugins.hasPlugin('android-library'))) {
+                android {
+                    compileSdkVersion rootProject.ext.compileSdkVersion
+                    buildToolsVersion rootProject.ext.buildToolsVersion
+                }
+            }
+        }
+    }
 }
