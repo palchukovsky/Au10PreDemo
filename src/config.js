@@ -2,13 +2,14 @@ import Firebase from 'firebase';
 import 'firebase/storage';
 
 let config = {
-  apiKey: 'AIzaSyC_jIYRhgx31TlxdJNbErvitlteTziRdG0',
-  authDomain: 'test-1-d5f4f.firebaseapp.com',
-  databaseURL: 'https://test-1-d5f4f.firebaseio.com',
-  projectId: 'test-1-d5f4f',
-  storageBucket: 'test-1-d5f4f.appspot.com',
-  messagingSenderId: '270932927749',
-  appId: '1:270932927749:web:14fd56e5194c5bbc14436c',
+  apiKey: "AIzaSyCU2GEX7AF9YYh0AXnG3XLsJyQGKq0Ebs0",
+  authDomain: "au10-pre-demo.firebaseapp.com",
+  databaseURL: "https://au10-pre-demo.firebaseio.com",
+  projectId: "au10-pre-demo",
+  storageBucket: "au10-pre-demo.appspot.com",
+  messagingSenderId: "728737786021",
+  appId: "1:728737786021:web:272c45f1fe0675dbaf454c",
+  measurementId: "G-HZWP2L00K6",
 };
 
 let app = Firebase.initializeApp(config);

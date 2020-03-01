@@ -125,9 +125,7 @@ export default class AddItem extends Component {
     }
     this.player.prepare(err => {
       if (err) {
-        console.error(
-          'Failed to reload player: "' + JSON.stringify(err) + '".',
-        );
+        console.error(`Failed to reload player: "${err.message}".`);
         this.player.destroy();
         this.player = null;
       }
@@ -205,20 +203,18 @@ export default class AddItem extends Component {
                 console.log(`Vocal uploaded: "${url}".`);
               })
               .catch(err => {
-                console.error(`Failed to store vocal record: "${err}".`);
+                console.error(
+                  `Failed to store vocal record: "${err.message}".`,
+                );
               });
           })
           .catch(err => {
             blob.close();
-            console.error(
-              'Failed to upload vocal: "' + JSON.stringify(err) + '".',
-            );
+            console.error(`Failed to upload vocal: "${err.message}".`);
           });
       })
       .catch(err => {
-        console.error(
-          'Failed to read new vocal file: "' + JSON.stringify(err) + '".',
-        );
+        console.error(`Failed to read new vocal file: ""${err.message}".`);
       });
     this.props.navigation.goBack();
   }
