@@ -11,6 +11,9 @@ export default class Home extends Component {
   componentDidMount() {
     vocalsDb.on('value', (snapshot, event) => {
       let data = snapshot.val();
+      if (data == null) {
+        return;
+      }
       let items = Object.values(data);
       this.setState({items});
     });

@@ -10,15 +10,15 @@ import {
   Text,
   View,
 } from 'react-native';
+import RNFetchBlob from 'react-native-fetch-blob';
+import UUIDGenerator from 'react-native-uuid-generator';
 import {
-  vocalsDb,
-  vocalsStorage,
   newVocalFilePath,
   vocalFileExt,
   vocalRecordMimeType,
+  vocalsDb,
+  vocalsStorage,
 } from '../config';
-import UUIDGenerator from 'react-native-uuid-generator';
-import RNFetchBlob from 'react-native-fetch-blob';
 
 const Blob = RNFetchBlob.polyfill.Blob;
 window.XMLHttpRequest = RNFetchBlob.polyfill.XMLHttpRequest;
@@ -44,6 +44,8 @@ export default class AddItem extends Component {
 
     this.reloadRecorder();
 
+    this.updateState();
+
     this.progressInterval = setInterval(() => {
       if (!this.player) {
         return;
@@ -52,14 +54,16 @@ export default class AddItem extends Component {
         // Debounce progress bar update by 200 ms
         return;
       }
+      if (this.player.duration < 0 || this.player.currentTime < 0) {
+        // workaround for https://github.com/react-native-community/react-native-audio-toolkit/issues/183
+        return;
+      }
       let currentProgress =
         Math.max(0, this.player.currentTime) / this.player.duration;
       if (isNaN(currentProgress)) {
         currentProgress = 0;
       }
-      this.setState({
-        progress: currentProgress,
-      });
+      this.setState({progress: currentProgress});
     }, 100);
   }
 
@@ -95,9 +99,7 @@ export default class AddItem extends Component {
   }
 
   stop() {
-    this.player.stop(() => {
-      this.updateState();
-    });
+    this.player.stop(() => this.updateState());
   }
 
   seek(percentage) {
@@ -106,9 +108,7 @@ export default class AddItem extends Component {
     }
     this.lastSeek = Date.now();
     let position = percentage * this.player.duration;
-    this.player.seek(position, () => {
-      this.updateState();
-    });
+    this.player.seek(position, () => this.updateState());
   }
 
   reloadPlayer() {
@@ -116,13 +116,17 @@ export default class AddItem extends Component {
       this.player.destroy();
     }
 
-    this.player = new Player(newVocalFilePath, {
-      autoDestroy: false,
-    });
+    this.player = new Player(newVocalFilePath, {autoDestroy: false});
+
     if (Platform.OS === 'android') {
       // workaround for the bug "playerId not found"
       this.player.speed = 0.0;
     }
+    // sometimes it does not call prepare callback in release build:
+    // https://github.com/react-native-community/react-native-audio-toolkit/issues/102
+    // https://github.com/react-native-community/react-native-audio-toolkit/issues/85
+    // or it maybe bug with workaround in setInterval:
+    // "this.player.duration < 0 || this.player.currentTime < 0"
     this.player.prepare(err => {
       if (err) {
         console.error(`Failed to reload player: "${err.message}".`);
@@ -134,12 +138,8 @@ export default class AddItem extends Component {
 
     this.updateState();
 
-    this.player.on('ended', () => {
-      this.updateState();
-    });
-    this.player.on('pause', () => {
-      this.updateState();
-    });
+    this.player.on('ended', () => this.updateState());
+    this.player.on('pause', () => this.updateState());
   }
 
   reloadRecorder() {
@@ -152,7 +152,6 @@ export default class AddItem extends Component {
       sampleRate: 44100,
       quality: 'max',
     });
-    this.updateState();
   }
 
   toggleRecord() {
@@ -170,20 +169,16 @@ export default class AddItem extends Component {
 
     recordAudioRequest.then(hasPermission => {
       if (!hasPermission) {
-        this.setState({
-          error: 'Record Audio Permission was denied',
-        });
+        this.setState({error: 'Record Audio Permission was denied'});
         return;
       }
       this.recorder.toggleRecord((err, stopped) => {
         if (err) {
-          this.setState({
-            error: err.message,
-          });
+          this.setState({error: err.message});
         }
         if (stopped) {
-          this.reloadPlayer();
           this.reloadRecorder();
+          this.reloadPlayer();
         }
         this.updateState();
       });
