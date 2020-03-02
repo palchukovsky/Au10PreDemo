@@ -193,7 +193,7 @@ export default class AddItem extends Component {
         this.storeBlob(blob)
           .then(url => {
             blob.close();
-            this.storeRecord(time, url)
+            this.storeRecord(time, url, this.player.duration)
               .then(() => {
                 console.log(`Vocal uploaded: "${url}".`);
               })
@@ -230,10 +230,11 @@ export default class AddItem extends Component {
     });
   }
 
-  async storeRecord(time, url) {
+  async storeRecord(time, url, duration) {
     return vocalsDb.push({
       url: url,
       time: time,
+      duration: duration,
     });
   }
 

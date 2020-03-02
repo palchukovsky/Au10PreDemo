@@ -2,6 +2,7 @@ import {Player} from '@react-native-community/audio-toolkit';
 import PropTypes from 'prop-types';
 import React, {Component} from 'react';
 import {Button, Platform, View, Text, StyleSheet} from 'react-native';
+import Slider from '@react-native-community/slider';
 
 export default class extends Component {
   static propTypes = {
@@ -9,12 +10,31 @@ export default class extends Component {
   };
   state = {
     playButton: '',
+    progress: 0,
+    duration: '',
+    position: '',
   };
 
   componentDidMount() {
     const time = new Date(this.props.record.time);
     this.time = time.toLocaleDateString() + ' ' + time.toLocaleTimeString();
+
+    this.setDuration(this.props.record.duration);
+
     this.player = null;
+
+    this.lastSeek = 0;
+    this.progressInterval = setInterval(() => {
+      if (!this.player) {
+        return;
+      }
+      if (Date.now() - this.lastSeek <= 200) {
+        // Debounce progress bar update by 200 ms
+        return;
+      }
+      this.updatePosition();
+    }, 100);
+
     this.setRecordState(false, false, false);
   }
 
@@ -39,6 +59,59 @@ export default class extends Component {
     });
   }
 
+  seek(percentage) {
+    if (!this.player) {
+      this.initPlayer()
+        .then(() => this.seek(percentage))
+        .catch(err => {
+          console.error(`Failed to init player: "${err.message}".`);
+        });
+      return;
+    }
+    this.lastSeek = Date.now();
+    let position = percentage * this.player.duration;
+    this.player.seek(position, () => this.updatePosition());
+  }
+
+  setDuration(source) {
+    this.setState({duration: this.getTimeStrFromDuration(source)});
+  }
+
+  updatePosition() {
+    if (this.player.duration < 0 || this.player.currentTime < 0) {
+      // workaround for https://github.com/react-native-community/react-native-audio-toolkit/issues/183
+      return;
+    }
+    let currentProgress =
+      Math.max(0, this.player.currentTime) / this.player.duration;
+    if (isNaN(currentProgress)) {
+      currentProgress = 0;
+    }
+    this.setState({
+      progress: currentProgress,
+      position: this.getTimeStrFromDuration(this.player.currentTime),
+    });
+  }
+
+  getTimeStrFromDuration(source) {
+    let secs = Math.round(source / 1000);
+    let mins = Math.floor(secs / 60);
+    secs -= mins * 60;
+    let hours = Math.floor(mins / 60);
+    mins -= hours * 60;
+    const pad = val => {
+      var result = val + '';
+      while (result.length < 2) {
+        result = '0' + result;
+      }
+      return result;
+    };
+    hours = pad(hours);
+    mins = pad(mins);
+    secs = pad(secs);
+    return `${hours}:${mins}:${secs}`;
+  }
+
   initPlayer() {
     if (this.player) {
       this.player.destroy();
@@ -57,6 +130,7 @@ export default class extends Component {
       this.player.prepare(err => {
         this.setRecordState(false, false, false);
         if (!err) {
+          this.setDuration(this.player.duration);
           resolve();
           return;
         }
@@ -92,6 +166,13 @@ export default class extends Component {
           title={this.state.playButton}
           onPress={() => this.togglePlay()}
         />
+        <Slider
+          step={0.0001}
+          onValueChange={position => this.seek(position)}
+          value={this.state.progress}
+        />
+        <Text style={styles.time}>{this.state.position}</Text>
+        <Text style={styles.time}>{this.state.duration}</Text>
         <Text style={styles.time}>{this.time}</Text>
       </View>
     );
