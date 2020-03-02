@@ -161,19 +161,33 @@ export default class extends Component {
   render() {
     return (
       <View style={styles.record}>
-        <Button
-          color="#841584"
-          title={this.state.playButton}
-          onPress={() => this.togglePlay()}
-        />
-        <Slider
-          step={0.0001}
-          onValueChange={position => this.seek(position)}
-          value={this.state.progress}
-        />
-        <Text style={styles.time}>{this.state.position}</Text>
-        <Text style={styles.time}>{this.state.duration}</Text>
-        <Text style={styles.time}>{this.time}</Text>
+        <View>
+          <View style={styles.column1}>
+            <Text style={styles.time}>{this.time}</Text>
+            <Button
+              color="#841584"
+              title={this.state.playButton}
+              onPress={() => this.togglePlay()}
+            />
+          </View>
+        </View>
+        <View style={styles.column2}>
+          <View>
+            <Slider
+              step={0.0001}
+              onValueChange={position => this.seek(position)}
+              value={this.state.progress}
+            />
+          </View>
+          <View style={styles.positionDuration}>
+            <View>
+              <Text style={styles.position}>{this.state.position}</Text>
+            </View>
+            <View>
+              <Text style={styles.duration}>{this.state.duration}</Text>
+            </View>
+          </View>
+        </View>
       </View>
     );
   }
@@ -181,11 +195,40 @@ export default class extends Component {
 
 const styles = StyleSheet.create({
   record: {
-    marginTop: 10,
+    marginTop: 8,
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  column1: {
+    flex: 1,
+    flexDirection: 'column',
+    width: 150,
+  },
+  column2: {
+    flex: 1,
+    flexDirection: 'column',
+    marginTop: 9,
+    justifyContent: 'space-between',
   },
   time: {
-    fontSize: 10,
+    fontSize: 9,
     color: 'gray',
     textAlign: 'center',
+  },
+  positionDuration: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  position: {
+    fontSize: 14,
+    marginLeft: 15,
+    color: 'dimgray',
+  },
+  duration: {
+    fontSize: 14,
+    marginRight: 15,
+    color: 'dimgray',
   },
 });
