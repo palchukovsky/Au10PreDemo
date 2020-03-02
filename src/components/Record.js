@@ -70,7 +70,10 @@ export default class extends Component {
     }
     this.lastSeek = Date.now();
     let position = percentage * this.player.duration;
-    this.player.seek(position, () => this.updatePosition());
+    this.player.seek(position, () => {
+      this.updatePosition();
+      this.setRecordState(false, this.player.isPlaying, false);
+    });
   }
 
   setDuration(source) {
