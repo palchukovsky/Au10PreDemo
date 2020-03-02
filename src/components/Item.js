@@ -19,6 +19,7 @@ export default class extends Component {
     const time = new Date(this.props.item.time);
     this.time = time.toLocaleDateString() + ' ' + time.toLocaleTimeString();
 
+    this.setPosition(0, 0);
     this.setDuration(this.props.item.duration);
 
     this.player = null;
@@ -90,9 +91,13 @@ export default class extends Component {
     if (isNaN(currentProgress)) {
       currentProgress = 0;
     }
+    this.setPosition(currentProgress, this.player.currentTime);
+  }
+
+  setPosition(currentProgress, currentTime) {
     this.setState({
       progress: currentProgress,
-      position: this.getTimeStrFromDuration(this.player.currentTime),
+      position: this.getTimeStrFromDuration(currentTime),
     });
   }
 
