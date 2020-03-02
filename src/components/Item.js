@@ -6,7 +6,7 @@ import Slider from '@react-native-community/slider';
 
 export default class extends Component {
   static propTypes = {
-    record: PropTypes.object.isRequired,
+    item: PropTypes.object.isRequired,
   };
   state = {
     playButton: '',
@@ -16,10 +16,10 @@ export default class extends Component {
   };
 
   componentDidMount() {
-    const time = new Date(this.props.record.time);
+    const time = new Date(this.props.item.time);
     this.time = time.toLocaleDateString() + ' ' + time.toLocaleTimeString();
 
-    this.setDuration(this.props.record.duration);
+    this.setDuration(this.props.item.duration);
 
     this.player = null;
 
@@ -120,7 +120,7 @@ export default class extends Component {
       this.player.destroy();
     }
 
-    this.player = new Player(this.props.record.url, {autoDestroy: false});
+    this.player = new Player(this.props.item.url, {autoDestroy: false});
 
     if (Platform.OS === 'android') {
       // workaround for the bug "playerId not found"
@@ -163,7 +163,7 @@ export default class extends Component {
 
   render() {
     return (
-      <View style={styles.record}>
+      <View style={styles.item}>
         <View>
           <View style={styles.column1}>
             <Text style={styles.time}>{this.time}</Text>
@@ -197,7 +197,7 @@ export default class extends Component {
 }
 
 const styles = StyleSheet.create({
-  record: {
+  item: {
     marginTop: 8,
     flex: 1,
     flexDirection: 'row',
